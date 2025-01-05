@@ -19,8 +19,6 @@ const Board = () => {
   const [sortBy, setSortBy] = useState<string>("name");
   const [filterBy, setFilterBy] = useState<string>("all");
 
-  const navigate = useNavigate();
-
   const checkLogin = () => {
     const isLoggedIn = auth.loggedIn();
     console.log(`User is logged in: ${isLoggedIn}`);
@@ -56,12 +54,11 @@ const Board = () => {
 
   useEffect(() => {
     if (loginCheck === false) {
-      console.log("User not logged in, redirecting...");
-      navigate("/login");
+      console.log("User not logged in");
     } else if (loginCheck === true) {
       fetchTickets();
     }
-  }, [loginCheck, navigate]);
+  }, [loginCheck]);
 
   useEffect(() => {
     if (tickets.length === 0) return;
@@ -104,58 +101,55 @@ const Board = () => {
     );
   }
 
-  if (loginCheck === false) {
-    console.log("User not logged in, redirecting...");
-    return (
-      <div className="board-loading">
-        <h1>Redirecting to Login...</h1>
-      </div>
-    );
-  }
-
-  if (tickets.length === 0) {
-    console.log("Waiting for tickets to load...");
-    return (
-      <div className="board-loading">
-        <h1>Loading Tickets...</h1>
-      </div>
-    );
-  }
-
   return (
-    <div className="board">
-      <div className="board-controls">
-        <button type="button" id="create-ticket-link">
-          <Link to="/create">New Ticket</Link>
-        </button>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="name">Sort by Name</option>
-          <option value="status">Sort by Status</option>
-        </select>
-        <select value={filterBy} onChange={(e) => setFilterBy(e.target.value)}>
-          <option value="all">All Tickets</option>
-          <option value="RadiantComet">Assigned to RadiantComet</option>
-          <option value="SunnyScribe">Assigned to SunnyScribe</option>
-        </select>
-      </div>
-      <div className="board-display">
-        {boardStates.map((status) => {
-          const swimlaneTickets = filteredTickets.filter(
-            (ticket) => ticket.status === status
-          );
-          console.log(`Rendering Swimlane (${status}):`, swimlaneTickets);
+    <>
+      {!loginCheck ? (
+        <div className="login-notice">
+          <h1>Login to create & view tickets</h1>
+        </div>
+      ) : tickets.length === 0 ? (
+        <div className="board-loading">
+          <h1>Loading Tickets...</h1>
+        </div>
+      ) : (
+        <div className="board">
+          <div className="board-controls">
+            <button type="button" id="create-ticket-link">
+              <Link to="/create">New Ticket</Link>
+            </button>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="name">Sort by Name</option>
+              <option value="status">Sort by Status</option>
+            </select>
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+            >
+              <option value="all">All Tickets</option>
+              <option value="RadiantComet">Assigned to RadiantComet</option>
+              <option value="SunnyScribe">Assigned to SunnyScribe</option>
+            </select>
+          </div>
+          <div className="board-display">
+            {boardStates.map((status) => {
+              const swimlaneTickets = filteredTickets.filter(
+                (ticket) => ticket.status === status
+              );
+              console.log(`Rendering Swimlane (${status}):`, swimlaneTickets);
 
-          return (
-            <Swimlane
-              title={status}
-              key={status}
-              tickets={swimlaneTickets}
-              deleteTicket={deleteIndvTicket}
-            />
-          );
-        })}
-      </div>
-    </div>
+              return (
+                <Swimlane
+                  title={status}
+                  key={status}
+                  tickets={swimlaneTickets}
+                  deleteTicket={deleteIndvTicket}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
